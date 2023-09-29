@@ -22,6 +22,7 @@ impl Mutation {
     async fn place_order(&self, input: OrderInput) -> Result<String> {
         // Validate stock symbol
         let is_valid = validate_symbol(&input.symbol).await?;
+        println!("{}", is_valid);
         if !is_valid {
             return Ok("Invalid symbol".to_string());
         }
