@@ -38,5 +38,5 @@ async fn main() {
 
     pretty_env_logger::init();
 
-    warp::serve(make_routes()).run(([127, 0, 0, 1], 8000)).await;
+    warp::serve(make_routes()).run(([0, 0, 0, 0], 8000)).await;
 }

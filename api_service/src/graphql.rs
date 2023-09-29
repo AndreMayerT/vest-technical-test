@@ -1,37 +1,43 @@
 use crate::services::order_service::*;
 
-use async_graphql::*;
 
-#[derive(Enum, Copy, Clone, Eq, PartialEq)]
+use async_graphql::*;
+use serde::{Serialize, Deserialize};
+
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum OrderType {
     Buy,
     Sell,
 }
 
-#[derive(InputObject)]
+#[derive(InputObject, Serialize, Deserialize)]
 pub struct OrderInput {
     symbol: String,
     quantity: i32,
     order_type: OrderType,
+    value: Option<f32>
 }
 
 pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn place_order(&self, input: OrderInput) -> Result<String> {
+    async fn place_order(&self, mut input: OrderInput) -> Result<String> {
         // Validate stock symbol
-        let is_valid = validate_symbol(&input.symbol).await?;
-        println!("{}", is_valid);
-        if !is_valid {
+        let operation_price = make_order(&input.symbol, input.quantity).await?;
+        if operation_price == 0.00 {
             return Ok("Invalid symbol".to_string());
         }
 
-        // Send order to Kafka
-        // send_order_to_kafka(&input).await?;
+        input.value = Some(operation_price);
 
-        // Return a simple message indicating that the order has been sent
+        // Send order to Kafka
+        let message = send_order_to_kafka(&input).await?;
+        println!("{:?}", message);
+
+
         Ok("Order sent".to_string())
+        
     }
 }
 

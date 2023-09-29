@@ -6,4 +6,4 @@ RUN cargo install --path .
 
 FROM debian:buster-slim
 COPY --from=builder /usr/local/cargo/bin/api_service /usr/local/bin/api_service
-CMD ["api_service"]
+#CMD ["api_service"]
