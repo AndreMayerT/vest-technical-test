@@ -106,7 +106,7 @@ async fn process_order(order: Order) -> Result<(), Error> {
             }
         }
         OrderType::Sell => {
-            // Handle sell orders (similarly to buy orders, but subtracting quantities and handling insufficient holdings)
+            // Handle sell orders
         }
     }
     
