@@ -2,33 +2,12 @@
 
 pub mod order_service {
     use reqwest::{Error, Client};
-    use serde::Deserialize;
+    use serde_json::Value;
     use rdkafka::config::ClientConfig;
     use rdkafka::producer::{FutureProducer, FutureRecord};
     use rdkafka::error::KafkaError;
     use std::time::Duration;
     use crate::graphql::OrderInput;
-
-    #[derive(Deserialize, Debug)]
-    struct ApiResponse {
-        status: ApiStatus,
-        data: PrimaryData
-    }
-
-    #[derive(Deserialize, Debug)]
-    struct PrimaryData {
-        primaryData: AskPrice,
-    }
-
-    #[derive(Deserialize, Debug)]
-    struct AskPrice {
-        askPrice: String,
-    }
-
-    #[derive(Deserialize, Debug)]
-    struct ApiStatus {
-        rCode: u16,
-    }
 
     pub async fn make_order(symbol: &str, quantity: i32) -> Result<f32, Error> {
         let client = Client::builder()
@@ -41,9 +20,9 @@ pub mod order_service {
         let response = client.get(&url).send().await?;
         // Check if the request was successful
         if response.status().is_success() {
-            let api_response: ApiResponse = response.json().await?;
-            if api_response.status.rCode == 200 {
-                let price_str = api_response.data.primaryData.askPrice;
+            let api_response: Value = response.json().await?;
+            if api_response["status"]["rCode"].as_u64() == Some(200) {
+                let price_str = api_response["data"]["primaryData"]["askPrice"].as_str().unwrap_or_default();
                 let price_without_dollar = price_str.trim_start_matches('$');
                 if let Ok(price) = price_without_dollar.parse::<f32>() {
                     let operation_price = price * (quantity as f32);
