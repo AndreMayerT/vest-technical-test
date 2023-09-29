@@ -21,3 +21,13 @@ services:
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data: {}
