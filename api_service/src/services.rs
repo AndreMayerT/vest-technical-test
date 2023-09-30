@@ -9,10 +9,8 @@ pub mod order_service {
     use std::time::Duration;
     use crate::graphql::OrderInput;
 
-    pub async fn make_order(symbol: &str, quantity: i32) -> Result<f32, Error> {
-        let client = Client::builder()
-        .use_rustls_tls() 
-        .build()?;
+    pub async fn make_order(symbol: &str, quantity: i32, client: &Client) -> Result<f64, Error> {
+        
 
         let url = format!("https://api.nasdaq.com/api/quote/{}/info?assetclass=stocks", symbol);
 
@@ -22,10 +20,10 @@ pub mod order_service {
         if response.status().is_success() {
             let api_response: Value = response.json().await?;
             if api_response["status"]["rCode"].as_u64() == Some(200) {
-                let price_str = api_response["data"]["primaryData"]["askPrice"].as_str().unwrap_or_default();
+                let price_str = api_response["data"]["primaryData"]["lastSalePrice"].as_str().unwrap_or_default();
                 let price_without_dollar = price_str.trim_start_matches('$');
-                if let Ok(price) = price_without_dollar.parse::<f32>() {
-                    let operation_price = price * (quantity as f32);
+                if let Ok(price) = price_without_dollar.parse::<f64>() {
+                    let operation_price = price * (quantity as f64);
                     println!("{}", operation_price);
                     Ok(operation_price)
                 } else {

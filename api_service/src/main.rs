@@ -1,7 +1,7 @@
 mod graphql;
 mod services;
 
-use async_graphql::{Schema,EmptySubscription, Request, http::{playground_source, GraphQLPlaygroundConfig}};
+use async_graphql::{Schema, Request, http::{playground_source, GraphQLPlaygroundConfig}};
 use async_graphql_warp::GraphQLResponse;
 use crate::graphql::*;
 use std::convert::Infallible;
@@ -11,8 +11,7 @@ extern crate log;
 extern crate pretty_env_logger;
 
 fn make_routes() -> BoxedFilter<(impl Reply,)> {
-    let schema = Schema::build(Query, Mutation, EmptySubscription)
-    .finish();
+    let schema = create_schema();
 
     let graphql_handler = warp::post().and(warp::path("graphql"))
     .and(
