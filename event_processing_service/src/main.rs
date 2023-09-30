@@ -106,9 +106,44 @@ async fn process_order(order: Order) -> Result<(), Error> {
             }
         }
         OrderType::Sell => {
-            // Handle sell orders
-        }
-    }
+
+            // Fetch the holding from the database
+            let row = client.query_one("SELECT quantity, total_cost FROM holdings WHERE symbol = $1", &[&order.symbol]).await;
     
-    Ok(())
+            match row {
+                Ok(existing_holding) => {
+                    let held_quantity: i32 = existing_holding.get("quantity");
+                    let total_cost: f64 = existing_holding.get("total_cost");
+                    
+                    // Check if there are enough shares to sell
+                    if held_quantity < order.quantity {
+                        return Err(tokio_postgres::Error::from(std::io::Error::new(
+                            std::io::ErrorKind::InvalidInput,
+                            "Not enough shares to sell",
+                        )));
+                    }
+                    
+                    // Update the holdings
+                    let new_quantity = held_quantity - order.quantity;
+                    let new_total_cost = total_cost - (order.value as f64);
+                    
+                    if new_quantity > 0 {
+                        client.execute(
+                            "UPDATE holdings SET quantity = $1, total_cost = $2 WHERE symbol = $3",
+                            &[&new_quantity, &new_total_cost, &order.symbol]
+                        ).await?;
+                    } else {
+                        // If no more shares are left, delete the holding
+                        client.execute("DELETE FROM holdings WHERE symbol = $1", &[&order.symbol]).await?;
+                    }
+                }
+
+                Err(_) => {
+                    // If no holding exists for the given symbol, return an error
+                    return Err(tokio_postgres::Error::from(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "No shares available to sell",
+                    )));
+                }
+            }
 }
