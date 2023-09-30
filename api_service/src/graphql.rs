@@ -126,8 +126,6 @@ impl Query {
 
                 let current_value =  current_price * quantity as f64;
 
-                println!("{}", current_price);
-
                 let reference_prices = ReferencePrices { 
                     lowest_price: lowest_price, 
                     highest_price: highest_price, 
