@@ -95,12 +95,14 @@ Since the whole project is containerized, the only prerequisite is having Docker
 ### Installation
 
 1. Clone the repo
-   ```sh
+   ```
    git clone https://github.com/AndreMayerT/vest-technical-test.git
    ```
 2. Go to the project folder vest-technical-test/ and run the containers
-
-   ```sh
+   ```
+   cd vest-technical-test/
+   ```
+   ```
    docker-compose up
    ```
 
