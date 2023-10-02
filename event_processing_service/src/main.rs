@@ -3,7 +3,8 @@ use rdkafka::consumer::{Consumer, StreamConsumer, DefaultConsumerContext};
 use rdkafka::config::ClientConfig;
 use tokio_stream::StreamExt; 
 use rdkafka::message::Message;
-use tokio_postgres::{NoTls, Error};
+use tokio_postgres::NoTls;
+use std::error::Error;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -59,7 +60,7 @@ async fn main() {
     }
 }
 
-async fn process_order(order: Order) -> Result<(), Error> {
+async fn process_order(order: Order) -> Result<(), Box<dyn Error>> {
     // Print the order to the console
     println!("Received Order: {:?}", order);
 
@@ -117,10 +118,7 @@ async fn process_order(order: Order) -> Result<(), Error> {
                     
                     // Check if there are enough shares to sell
                     if held_quantity < order.quantity {
-                        return Err(tokio_postgres::Error::from(std::io::Error::new(
-                            std::io::ErrorKind::InvalidInput,
-                            "Not enough shares to sell",
-                        )));
+                        return Err("Not enough shares to sell".into())
                     }
                     
                     // Update the holdings
@@ -140,10 +138,11 @@ async fn process_order(order: Order) -> Result<(), Error> {
 
                 Err(_) => {
                     // If no holding exists for the given symbol, return an error
-                    return Err(tokio_postgres::Error::from(std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput,
-                        "No shares available to sell",
-                    )));
+                    return Err("No shares available to sell".into());
                 }
             }
+        }
+    }
+
+    Ok(())
 }
