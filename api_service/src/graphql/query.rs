@@ -1,92 +1,7 @@
-use crate::services::order_service::*;
 use async_graphql::*;
-use serde::{Serialize, Deserialize};
-use reqwest::Client;
+use crate::graphql::types::*;
 use tokio_postgres::NoTls;
-
-
-
-#[derive(Enum, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub enum OrderType {
-    Buy,
-    Sell,
-}
-
-#[derive(InputObject, Serialize, Deserialize)]
-pub struct OrderInput {
-    symbol: String,
-    quantity: i32,
-    order_type: OrderType,
-    value: Option<f64>
-}
-
-#[derive(SimpleObject, Serialize, Deserialize)]
-pub struct ReferencePrices {
-    lowest_price: f64,
-    highest_price: f64,
-    average_price: f64
-}
-
-#[derive(SimpleObject, Serialize, Deserialize)]
-pub struct Holding {
-    symbol: String,
-    profit_loss_percentage: String,
-    share_held: i32,
-    current_value: f64,
-    reference_prices: ReferencePrices
-}
-
-#[derive(SimpleObject, Serialize, Deserialize)]
-pub struct HourlyPricePoint {
-    hour: String,
-    price: f64 
-}
-
-#[derive(Debug, Deserialize)]
-struct ApiResponse {
-    data: ApiData,
-}
-
-#[derive(Debug, Deserialize)]
-struct ApiData {
-    chart: Vec<ChartPoint>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChartPoint {
-    z: HistoricalPricePoint,
-}
-
-#[derive(Debug, Deserialize)]
-struct HistoricalPricePoint {
-    dateTime: String,
-    value: String,
-}
-
-pub struct Mutation;
-
-#[Object]
-impl Mutation {
-    async fn place_order(&self, ctx: &Context<'_>,mut input: OrderInput) -> Result<String> {
-        // Validate stock symbol
-        let client = ctx.data::<Client>().expect("reqwest::Client not found in Context");
-
-        let operation_price = make_order(&input.symbol, input.quantity, client).await?;
-        if operation_price == 0.00 {
-            return Ok("Invalid symbol".to_string());
-        }
-
-        input.value = Some(operation_price);
-
-        // Send order to Kafka
-        let message = send_order_to_kafka(&input).await?;
-        println!("{:?}", message);
-
-
-        Ok("Order sent".to_string())
-        
-    }
-}
+use reqwest::Client;
 
 pub struct Query;
 
@@ -163,11 +78,11 @@ impl Query {
 
 
                 holdings.push(Holding {
-                symbol,
-                profit_loss_percentage, // Calculated value
-                share_held: quantity,
-                current_value, // Calculated value
-                reference_prices, // Calculated value
+                    symbol,
+                    profit_loss_percentage, // Calculated value
+                    share_held: quantity,
+                    current_value, // Calculated value
+                    reference_prices, // Calculated value
                 });
             } else {
                 return Err(FieldError::new(
@@ -213,15 +128,4 @@ impl Query {
             return Err(FieldError::new("Error fetching data from NASDAQ API"));
         }
     }
-}
-
-pub fn create_schema() -> Schema<Query, Mutation, EmptySubscription> {
-    let client = Client::builder()
-        .use_rustls_tls()
-        .build()
-        .expect("Failed to build reqwest client");
-
-    Schema::build(Query, Mutation, EmptySubscription)
-        .data(client)
-        .finish()
 }
