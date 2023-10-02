@@ -80,9 +80,9 @@ Stock data is obtained from the NASDAQ API, providing reliable and up-to-date in
 
 ## Getting Started
 
-### Prerequisites
+### Pre-Requisites
 
-Since the whole project is containerized, the only prerequisite is having Docker Engine and Docker Compose installed locally.
+Since the whole project is containerized, the only pre-requisite is having Docker Engine and Docker Compose installed locally.
 
 - **Docker Engine** <br />
   Please follow the installation guide for your system at https://docs.docker.com/engine/install/
@@ -116,7 +116,7 @@ Since the whole project is containerized, the only prerequisite is having Docker
 
 ## Usage
 
-Here is examples of the usage for testing the endpoints of the project. For that, there is a built-in and easy to use enviroment for GraphQL called "playground" which you can use. To go there, after the project is up and running, visit the link http://localhost:8000/playground
+Here is examples of the usage for testing the endpoints of the project. For that, there is a built-in and easy to use environment for GraphQL called "playground" which you can use. To go there, after the project is up and running, visit the link http://localhost:8000/playground
 
 <br/>
 
