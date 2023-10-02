@@ -4,6 +4,8 @@ use serde::{Serialize, Deserialize};
 use reqwest::Client;
 use tokio_postgres::NoTls;
 
+
+
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum OrderType {
     Buy,
@@ -32,6 +34,33 @@ pub struct Holding {
     share_held: i32,
     current_value: f64,
     reference_prices: ReferencePrices
+}
+
+#[derive(SimpleObject, Serialize, Deserialize)]
+pub struct HourlyPricePoint {
+    hour: String,
+    price: f64 
+}
+
+#[derive(Debug, Deserialize)]
+struct ApiResponse {
+    data: ApiData,
+}
+
+#[derive(Debug, Deserialize)]
+struct ApiData {
+    chart: Vec<ChartPoint>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ChartPoint {
+    z: HistoricalPricePoint,
+}
+
+#[derive(Debug, Deserialize)]
+struct HistoricalPricePoint {
+    dateTime: String,
+    value: String,
 }
 
 pub struct Mutation;
@@ -148,6 +177,41 @@ impl Query {
         }
         
         Ok(holdings)
+    }
+
+    async fn historical_price(&self, ctx: &Context<'_>, symbol: String) -> FieldResult<Vec<HourlyPricePoint>> {
+        let url = format!("https://api.nasdaq.com/api/quote/{}/chart?assetclass=stocks", symbol);
+
+        let client = ctx.data::<Client>().expect("reqwest::Client not found in Context");
+
+        let response = client.get(&url).send().await?;
+
+        if response.status().is_success() {
+            let api_response: ApiResponse = response.json().await?;
+            
+            let mut hourly_data: Vec<HourlyPricePoint> = Vec::new();
+            
+            for point in api_response.data.chart {
+                
+                // Extract the hour and select the price at that exact hour
+                let datetime_str = point.z.dateTime; 
+                let value = point.z.value.parse().unwrap_or(0.0);
+                
+                let parts: Vec<&str> = datetime_str.split_whitespace().collect();
+                if let Some(time) = parts.get(0) {
+                    let time_parts: Vec<&str> = time.split(':').collect();
+                    let minute = time_parts.get(1).cloned().unwrap();
+
+                    if minute == "00" {
+                        hourly_data.push(HourlyPricePoint { hour: datetime_str, price: value });
+                    }
+                }
+            }
+            
+            Ok(hourly_data)
+        } else {
+            return Err(FieldError::new("Error fetching data from NASDAQ API"));
+        }
     }
 }
 
