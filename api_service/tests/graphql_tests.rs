@@ -1,5 +1,7 @@
 use api_service::graphql::create_schema;
 use tokio::runtime::Runtime;
+use async_graphql::{Value, Name};
+use indexmap::IndexMap;
 
 
 #[test]
@@ -15,14 +17,16 @@ fn test_place_order() {
                     symbol: "AAPL",
                     quantity: 1,
                     orderType: BUY,
-                    value: 150.0
                 })
             }
             "#,
         ).await;
 
+        let mut expected_data = IndexMap::new();
+        expected_data.insert(Name::new("placeOrder"), Value::String("Order sent".to_string()));
+
         assert!(res.errors.is_empty(), "Expected no errors, got: {:?}", res.errors);
-        assert_eq!(res.data, async_graphql::Value::String("Order sent".to_string()));
+        assert_eq!(res.data, Value::Object(expected_data));
 
         let res = schema.execute(
             r#"
@@ -31,14 +35,16 @@ fn test_place_order() {
                     symbol: "AAPL",
                     quantity: 2,
                     orderType: SELL,
-                    value: 150.0
                 })
             }
             "#,
         ).await;
 
+        let mut expected_data = IndexMap::new();
+        expected_data.insert(Name::new("placeOrder"), Value::String("Order sent".to_string()));
+
         assert!(res.errors.is_empty(), "Expected no errors, got: {:?}", res.errors);
-        assert_eq!(res.data, async_graphql::Value::String("Order sent".to_string()));
+        assert_eq!(res.data, Value::Object(expected_data));
 
         let res = schema.execute(
             r#"
@@ -47,14 +53,16 @@ fn test_place_order() {
                     symbol: "asassa",
                     quantity: 1,
                     orderType: BUY,
-                    value: 150.0
                 })
             }
             "#,
         ).await;
 
+        let mut expected_data = IndexMap::new();
+        expected_data.insert(Name::new("placeOrder"), Value::String("Invalid symbol".to_string()));
+
         assert!(res.errors.is_empty(), "Expected no errors, got: {:?}", res.errors);
-        assert_eq!(res.data, async_graphql::Value::String("Invalid symbol".to_string()));
+        assert_eq!(res.data, Value::Object(expected_data));
     });
 }
 
