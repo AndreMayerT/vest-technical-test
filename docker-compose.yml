@@ -5,17 +5,23 @@ services:
     depends_on:
       - kafka
       - zookeeper
+      - db
     volumes:
       - ./api_service:/api_service
     ports:
       - 8000:8000
+    working_dir: /api_service
+    command: ["cargo", "run"]
   event_processing_service:
     image: mcr.microsoft.com/devcontainers/rust:latest
     depends_on:
       - kafka
       - zookeeper
+      - db
     volumes:
       - ./event_processing_service:/event_processing_service
+    working_dir: /api_service
+    command: ["cargo", "run"]
   kafka:
     image: confluentinc/cp-kafka:latest
     environment:
