@@ -49,9 +49,9 @@ This project is the backend of a trading environment simulation, allowing users 
 
 ### Overview
 
-- **API GraphQL Service**: This service provides three main endpoints allowing users to perform market orders, view historical prices of a stock, and track portfolio performance. It was developed using Rust 1.70.0, tokio, warp, async-graphql, and many others. To see the full list of dependencies take a look at the Cargo.toml file.
+- **API GraphQL Service**: This service provides three main endpoints allowing users to perform market orders, view historical prices of a stock, and track portfolio performance. It was developed using Rust 1.70.0, tokio, warp, async-graphql, and many others. To view the full list of dependencies take a look at the Cargo.toml file.
 
-- **Event Processing Service**: This service operates independently of the API service, executing buy/sell orders and updating the database with fulfilled orders. All logic that persists data to a database is housed within this service, and it was also developed using Rust 1.70.0 and tokio. To see the full list of dependencies take a look at the Cargo.toml file.
+- **Event Processing Service**: This service operates independently of the API service, executing buy/sell orders and updating the database with fulfilled orders. All logic that persists data to a database is housed within this service, and it was also developed using Rust 1.70.0 and tokio. To view the full list of dependencies take a look at the Cargo.toml file.
 
 ### Communication and Database
 
