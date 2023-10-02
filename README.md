@@ -87,8 +87,6 @@ Since the whole project is containerized, the only pre-requisite is having Docke
 - **Docker Engine** <br />
   Please follow the installation guide for your system at https://docs.docker.com/engine/install/
 
-  <br />
-
 - **Docker Compose** <br />
   After having Docker Engine, follow the instructions for installing the Compose plugin at https://docs.docker.com/compose/install/
 
