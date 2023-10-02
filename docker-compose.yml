@@ -20,7 +20,7 @@ services:
       - db
     volumes:
       - ./event_processing_service:/event_processing_service
-    working_dir: /api_service
+    working_dir: /event_processing_service
     command: ["cargo", "run"]
   kafka:
     image: confluentinc/cp-kafka:latest
